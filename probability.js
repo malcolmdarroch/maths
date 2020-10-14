@@ -159,8 +159,9 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
         }
         else if (between) {
             max1 = negative || negativeAndPositive ? -0.999 : 0.999;
+            min2 = negative ? -1.0 : 1.0;
             z1 = genRand(i, 0.0, max1.toFixed(level), level);
-            z2 = genRand(i, 1.0, max.toFixed(level), level);
+            z2 = genRand(i, min2, max.toFixed(level), level);
             z  = z2;
             p1 = parseFloat(getProbability(z1)).toFixed(4);
             p2 = parseFloat(getProbability(z2)).toFixed(4);
