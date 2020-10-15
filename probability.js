@@ -138,7 +138,7 @@ function genRand(i, min, max, decimalPlaces, variable = Variable.Z1) {
 }
 
 function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mixed = false, 
-                  between = false, negativeAndPositive = false, formula = false) {
+                  between = false, negativeAndPositive = false, formula = false, lookup = false) {
     var questions = "";
     score = 0;
     for (var i = 0; i < totalQuestions; i++) {
@@ -185,18 +185,29 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
             var mu     = parseInt(genRand(i, level, level + 25, 0, Variable.MU) * 100);
             var sigma  = parseInt(genRand(i, level, level +  5, 0, Variable.SIGMA) * 10);
             var x      = parseInt(genRand(i, level, level *  5, 0, Variable.X) * neg + mu);
-            answer[i]  = parseFloat((x - mu)/sigma).toFixed(4);
             //console.log("mu     = " + mu);
             //console.log("sigma  = " + sigma);
             //console.log("x      = " + x);
             //console.log("neg*mu = " + (neg*mu));
             //console.log("x-mu   = " + (x-mu));
             //console.log("answer(" + i + ") = " + answer[i]);
-            //console.log("-------------------------------------------")
-            questions += "<td>The value of " + "Z".italics() + ", if &mu; = </td>";
-            questions += "<td><span style=\"font-size: 11pt\">" + mu + ", &sigma; = </span></td>";
-            questions += "<td><span style=\"font-size: 11pt\">" + sigma + ", and " + "X".italics() + " = </span></td>";
-            z = x;
+            //console.log("-------------------------------------------");
+
+            if (lookup) {
+                z = parseFloat((x - mu)/sigma).toFixed(4);
+                answer[i] = parseFloat(Math.abs(getProbability(z))).toFixed(4);
+                questions += "<td>The probability that a random value " + "X".italics() + ", is greater than zero and less than </td>";
+                questions += "<td><span style=\"font-size: 11pt\">" + x + ", if &mu; = </span></td>";
+                questions += "<td><span style=\"font-size: 11pt\">" + mu + ", and &sigma; = </span></td>";
+                z = sigma;
+            }
+            else {
+                answer[i]  = parseFloat((x - mu)/sigma).toFixed(4);
+                questions += "<td>The value of " + "Z".italics() + ", if &mu; = </td>";
+                questions += "<td><span style=\"font-size: 11pt\">" + mu + ", &sigma; = </span></td>";
+                questions += "<td><span style=\"font-size: 11pt\">" + sigma + ", and " + "X".italics() + " = </span></td>";
+                z = x;
+            }
         }
         else {
             answer[i] = parseFloat((parseFloat("0.5") - parseFloat(getProbability(z)))).toFixed(4);
