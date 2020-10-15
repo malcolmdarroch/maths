@@ -63,9 +63,9 @@ function getProbability (z)
     var i = Number(absZ.toString().charAt(0) + absZ.toString().charAt(2));
     var j = Number(absZ.toString().charAt(3)) + 1;
     var k = Number(absZ.toString().charAt(4)) + 11;
-    console.log (" i = " + i + ", j = " + j + ", k = " + k);
-    console.log ("        (Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4)  = " + (Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4));
-    console.log ("sign * ((Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4)) = " + sign * ((Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4)));
+    //console.log (" i = " + i + ", j = " + j + ", k = " + k);
+    //console.log ("        (Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4)  = " + (Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4));
+    //console.log ("sign * ((Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4)) = " + sign * ((Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4)));
 
     return sign * ((Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4));
 }
@@ -110,29 +110,35 @@ function markAnswers(){
     document.getElementById('score').value = score;
 }
 
+const Variable = {Z1:0, Z2:1, MU:2, SIGMA:3, X:4}
+Object.freeze(Variable);
+
 var zValues = new Array(totalQuestions);
-function alreadyUsed(z)
+var variableValues = new Array(totalQuestions).fill(0).map(row => Array(Variable).fill(0));
+function alreadyUsed(variable, value)
 {
   for (i=0; i<totalQuestions; i++)
   {
-    if (z == zValues[i]) return true;
+    //if (z == zValues[i]) return true;
+    if (value == variableValues[i][variable]) return true;
   }
   return false;
 }
-function genRand(i, min, max, decimalPlaces) {  
-    var z = 0;
-    while (z == 0 || alreadyUsed(z))
+function genRand(i, min, max, decimalPlaces, variable = Variable.Z1) {  
+    var value = 0;
+    while (value == 0 || alreadyUsed(variable, value))
     {
         var rand = Math.random() < 0.5 ? ((1-Math.random()) * (max-min) + min) : (Math.random() * (max-min) + min);  // could be min or max or anything in between
         var power = Math.pow(10, decimalPlaces);
-        z = (Math.floor(rand*power) / power).toFixed(decimalPlaces);
+        value = (Math.floor(rand*power) / power).toFixed(decimalPlaces);
     }
-    zValues[i] = z;
-    return z;
+    zValues[i] = value;
+    variableValues[i][variable];
+    return value;
 }
 
 function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mixed = false, 
-                  between = false, negativeAndPositive = false) {
+                  between = false, negativeAndPositive = false, formula = false) {
     var questions = "";
     score = 0;
     for (var i = 0; i < totalQuestions; i++) {
@@ -145,44 +151,62 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
         questions += "<tr><td>" + (i + 1) + ".</td>";
         var level = 1 + Math.floor(i/totalQuestions * 3);
         var max = negative ? -1.999 : 1.999;
-        var z = genRand(i, 0.0, max.toFixed(level), level);
+        var z = genRand(i, 0.0, max.toFixed(level), level, Variable.Z1);
         if (betweenZeroAnd) {
             answer[i] = getProbability(z);
             questions += "<td>The probability that a random value is between zero and </td>";
         } 
         else if (lessThan) {
             answer[i] = parseFloat((parseFloat("0.5") + parseFloat(getProbability(z)))).toFixed(4);
-            console.log("getProbability(" + z + ") = " + getProbability(z));
-            console.log("answer(" + i + ")         = " + answer[i]);
-            console.log("-------------------------------------------")
+            //console.log("getProbability(" + z + ") = " + getProbability(z));
+            //console.log("answer(" + i + ")         = " + answer[i]);
+            //console.log("-------------------------------------------")
             questions += "<td>The probability that a random value is less than </td>";
         }
         else if (between) {
             max1 = negative || negativeAndPositive ? -0.999 : 0.999;
             min2 = negative ? -1.0 : 1.0;
-            z1 = genRand(i, 0.0, max1.toFixed(level), level);
-            z2 = genRand(i, min2, max.toFixed(level), level);
+            z1 = genRand(i, 0.0, max1.toFixed(level), level, Variable.Z1);
+            z2 = genRand(i, min2, max.toFixed(level), level, Variable.Z2);
             z  = z2;
             p1 = parseFloat(getProbability(z1)).toFixed(4);
             p2 = parseFloat(getProbability(z2)).toFixed(4);
             answer[i] = Math.abs(p2 - p1).toFixed(4);
-            console.log("p1 = " + p1);
-            console.log("p2 = " + p2);
-            console.log("answer(" + i + ") = " + answer[i]);
-            console.log("-------------------------------------------")
+            //console.log("p1 = " + p1);
+            //console.log("p2 = " + p2);
+            //console.log("answer(" + i + ") = " + answer[i]);
+            //console.log("-------------------------------------------")
             questions += "<td>The probability that a random value is between </td>";
             questions += "<td><span style=\"font-size: 11pt\">" + z1 + " and </span></td>";
         }
+        else if (formula) {
+            var neg    = i == 5 || i == 7 || i == 9 ? -1 : 1;
+            var deltaX = negative ? -5 : 5;
+            var mu     = parseInt(genRand(i, level, level + 25, 0, Variable.MU) * 100);
+            var sigma  = parseInt(genRand(i, level, level +  5, 0, Variable.SIGMA) * 10);
+            var x      = parseInt(genRand(i, level, level *  5, 0, Variable.X) * neg + mu);
+            answer[i]  = parseFloat((x - mu)/sigma).toFixed(4);
+            //console.log("mu     = " + mu);
+            //console.log("sigma  = " + sigma);
+            //console.log("x      = " + x);
+            //console.log("neg*mu = " + (neg*mu));
+            //console.log("x-mu   = " + (x-mu));
+            //console.log("answer(" + i + ") = " + answer[i]);
+            //console.log("-------------------------------------------")
+            questions += "<td>The value of " + "Z".italics() + ", if &mu; = </td>";
+            questions += "<td><span style=\"font-size: 11pt\">" + mu + ", &sigma; = </span></td>";
+            questions += "<td><span style=\"font-size: 11pt\">" + sigma + ", and " + "X".italics() + " = </span></td>";
+            z = x;
+        }
         else {
             answer[i] = parseFloat((parseFloat("0.5") - parseFloat(getProbability(z)))).toFixed(4);
-            console.log("getProbability(" + z + ") = " + getProbability(z));
-            console.log("answer(" + i + ")         = " + answer[i]);
-            console.log("-------------------------------------------")
+            //console.log("getProbability(" + z + ") = " + getProbability(z));
+            //console.log("answer(" + i + ")         = " + answer[i]);
+            //console.log("-------------------------------------------")
             questions += "<td>The probability that a random value is greater than </td>";
         }
         
         questions += "<td><span style=\"font-size: 11pt\">" + z + " is: </span></td>";
-
         questions += "<td><span id='" + i + "' style=\"font-weight: bold;font-size: 11pt\">0.</span></td>";
         questions += "<td><span>    </span></td>";
         questions += "<td><span id='" + (answerId(i)) + "' style=\"font-weight: bold;font-size: 11pt\"> " + answer[i] + "</span></td></tr>";
