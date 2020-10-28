@@ -59,7 +59,7 @@ function getProbability (z)
     var absZ = Math.abs(z);
     var sign = (absZ / z).toFixed(0); 
     absZ = absZ.toString().length < 3 ? absZ.toFixed(1) : absZ;
-    console.log("...Math.abs(" + z + ") = " + Math.abs(z) + ", sign = " + sign + ", absZ.toString().charAt(2) = " + absZ.toString().charAt(2));
+    //console.log("...Math.abs(" + z + ") = " + Math.abs(z) + ", sign = " + sign + ", absZ.toString().charAt(2) = " + absZ.toString().charAt(2));
     var i = Number(absZ.toString().charAt(0) + absZ.toString().charAt(2));
     var j = Number(absZ.toString().charAt(3)) + 1;
     var k = Number(absZ.toString().charAt(4)) + 11;
@@ -92,9 +92,14 @@ function markAnswers(){
         if (!answerVisible)
         {
             var studentsAnswer = MQ.MathField(document.getElementById(i)).latex();
-            attempted = studentsAnswer.length == 6;
+            attempted = studentsAnswer.length == answer[i].length;
         }
 
+        //console.log("i              = " + i);
+        //console.log("studentsAnswer = " + studentsAnswer);
+        //console.log("answer         = " + answer[i]);
+        //console.log("studentsAnswer.length = " + studentsAnswer.length);
+        //console.log("answer[i].length = " + answer[i].length);
         if (attempted)
         {
             numAttempts++;
@@ -153,8 +158,11 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
         var max = negative ? -1.999 : 1.999;
         var z = genRand(i, 0.0, max.toFixed(level), level, Variable.Z1);
         if (betweenZeroAnd) {
-            answer[i] = getProbability(z);
+            answer[i] = getProbability(z).toFixed(4);
             questions += "<td>The probability that a random value is between zero and </td>";
+            //console.log("getProbability(" + z + ") = " + getProbability(z));
+            //console.log("answer(" + i + ")         = " + answer[i]);
+            //console.log("-------------------------------------------")
         } 
         else if (lessThan) {
             answer[i] = parseFloat((parseFloat("0.5") + parseFloat(getProbability(z)))).toFixed(4);
@@ -185,14 +193,6 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
             var mu     = parseInt(genRand(i, level, level + 25, 0, Variable.MU) * 100);
             var sigma  = parseInt(genRand(i, level, level +  5, 0, Variable.SIGMA) * 10);
             var x      = parseInt(genRand(i, level, level *  5, 0, Variable.X) * neg + mu);
-            //console.log("mu     = " + mu);
-            //console.log("sigma  = " + sigma);
-            //console.log("x      = " + x);
-            //console.log("neg*mu = " + (neg*mu));
-            //console.log("x-mu   = " + (x-mu));
-            //console.log("answer(" + i + ") = " + answer[i]);
-            //console.log("-------------------------------------------");
-
             if (lookup) {
                 z = parseFloat((x - mu)/sigma).toFixed(4);
                 answer[i] = parseFloat(Math.abs(getProbability(z))).toFixed(4);
@@ -207,6 +207,13 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
                 questions += "<td><span style=\"font-size: 11pt\">" + mu + ", &sigma; = </span></td>";
                 questions += "<td><span style=\"font-size: 11pt\">" + sigma + ", and " + "X".italics() + " = </span></td>";
                 z = x;
+                //console.log("mu     = " + mu);
+                //console.log("sigma  = " + sigma);
+                //console.log("x      = " + x);
+                //console.log("neg*mu = " + (neg*mu));
+                //console.log("x-mu   = " + (x-mu));
+                //console.log("answer(" + i + ") = " + answer[i]);
+                //console.log("-------------------------------------------");
             }
         }
         else {
@@ -231,7 +238,13 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
                 edit: function() {
                     var elementMathField = MQ.MathField(document.getElementById(ielement));
                     var studentsAnswer = elementMathField.latex();
-                    var filled = studentsAnswer.length == 6;
+                    var filled = studentsAnswer.length == answer[ielement].length;
+                    //console.log("In edit: ielement                = " + ielement);
+                    //console.log("In edit: studentsAnswer          = " + studentsAnswer);
+                    //console.log("In edit: studentsAnswer.length   = " + studentsAnswer.length);
+                    //console.log("In edit: answer[ielement]        = " + answer[ielement]);
+                    //console.log("In edit: answer[ielement].length = " + answer[ielement].length);
+                    //console.log("In edit: filled                  = " + filled);
                     if (filled) {
                         markAnswers();
                         showTotal();
