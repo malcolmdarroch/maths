@@ -77,10 +77,8 @@ function answerId(i)
 
 function showAnswer() {
     document.getElementById(answerId(ielement)).style.display = 'block';
-    document.getElementById(ielement).readonly = "true";
     var staticMathField = MQ.StaticMath(document.getElementById(ielement));
     markAnswers();
-    document.getElementById(ielement+1).focus();
 }
 
 function markAnswers(){
