@@ -15,7 +15,9 @@ function showAnswer() {
     document.getElementById(answerId(ielement)).style.display = 'block';
     console.log("Malcolm in showAnswer(): document.getElementById(ielement+10).innerHTML = " + document.getElementById(ielement+10).innerHTML);
     console.log("Malcolm in showAnswer(): MQ.MathField(document.getElementById(ielement+10)).latex() = " + MQ.MathField(document.getElementById(ielement+10)).latex());
-    MQ.MathField(element).focus();
+    const mathTextarea = document.getElementById(ielement).querySelector(".mq-textarea textarea");
+    mathTextarea.disabled = true;
+    markAnswers();
 }
 function markAnswers(){
     score = 0;
