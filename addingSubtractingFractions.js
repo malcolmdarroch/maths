@@ -1,6 +1,7 @@
 var totalQuestions = 10;
 var score = 0;
 var answer = new Array(totalQuestions);
+var studentsFinalAnswer = new Array(totalQuestions);
 var MQ = MathQuill.noConflict().getInterface(2);
 var ielement = 0;
 var element;
@@ -10,13 +11,9 @@ function answerId(i)
     return i + totalQuestions;
 }
 function showAnswer() {
-    console.log("Malcolm in showAnswer(): ielement = " + ielement);
-    console.log("Malcolm in showAnswer(): document.getElementById(ielement+10) = " + document.getElementById(ielement+10));
+    document.getElementById(answerId(ielement)).readOnly = true;
     document.getElementById(answerId(ielement)).style.display = 'block';
-    console.log("Malcolm in showAnswer(): document.getElementById(ielement+10).innerHTML = " + document.getElementById(ielement+10).innerHTML);
-    console.log("Malcolm in showAnswer(): MQ.MathField(document.getElementById(ielement+10)).latex() = " + MQ.MathField(document.getElementById(ielement+10)).latex());
-    const mathTextarea = document.getElementById(ielement).querySelector(".mq-textarea textarea");
-    mathTextarea.disabled = true;
+    studentsFinalAnswer[ielement] = MQ.MathField(document.getElementById(ielement)).latex();
     markAnswers();
 }
 function markAnswers(){
@@ -24,7 +21,8 @@ function markAnswers(){
     numAttempts = 0;
     for (i = 0; i < totalQuestions; i++) {
         var studentsAnswer = MQ.MathField(document.getElementById(i)).latex();
-        var attempted      = studentsAnswer != "\\frac{ }{ }";
+        var answerVisible = document.getElementById(answerId(i)).style.display == 'block';
+        var attempted      = answerVisible || studentsAnswer != "\\frac{ }{ }";
         if (attempted)
         {
             numAttempts++;
@@ -38,6 +36,8 @@ function markAnswers(){
         }
     }
     document.getElementById('score').value = score;
+    document.getElementById('numAttempts').value = numAttempts;
+    showTotal();
 }
 function HCF(x, y) {
     // Returns the highest common factor of a pair of numbers.
@@ -129,6 +129,13 @@ function newSheet(commonD, type) {
                 edit: function() {
                     var elementMathField = MQ.MathField(document.getElementById(ielement));
                     var studentsAnswer = elementMathField.latex();
+                    if (document.getElementById(answerId(ielement)).readOnly) {
+                        if (studentsAnswer != studentsFinalAnswer[ielement]){
+                            elementMathField.latex(studentsFinalAnswer[ielement]);
+                        }
+                        return;
+                    }
+
                     var filled = studentsAnswer.indexOf('{ }') == -1;
                     if (filled) {
                         markAnswers();
@@ -165,26 +172,26 @@ function newSheet(commonD, type) {
     var keyboard = document.getElementById('keyboard');
     keyboard.style.top = element10.parentElement.getBoundingClientRect().top;
     keyboard.style.left = element10.parentElement.getBoundingClientRect().left;
-    console.log("Malcolm element10.getBoundingClientRect().left   = " + element10.getBoundingClientRect().left);
-    console.log("Malcolm element10.getBoundingClientRect().right  = " + element10.getBoundingClientRect().right);
-    console.log("Malcolm element10.getBoundingClientRect().width  = " + element10.getBoundingClientRect().width);
-    console.log("Malcolm element10.getBoundingClientRect().height = " + element10.getBoundingClientRect().height);
+    //console.log("Malcolm element10.getBoundingClientRect().left   = " + element10.getBoundingClientRect().left);
+    //console.log("Malcolm element10.getBoundingClientRect().right  = " + element10.getBoundingClientRect().right);
+    //console.log("Malcolm element10.getBoundingClientRect().width  = " + element10.getBoundingClientRect().width);
+    //console.log("Malcolm element10.getBoundingClientRect().height = " + element10.getBoundingClientRect().height);
     var questions = document.getElementById('questions');
-    console.log("Malcolm questions.getBoundingClientRect().left   = " + questions.getBoundingClientRect().left);
-    console.log("Malcolm questions.getBoundingClientRect().right  = " + questions.getBoundingClientRect().right);
-    console.log("Malcolm questions.getBoundingClientRect().width  = " + questions.getBoundingClientRect().width);
-    console.log("Malcolm questions.getBoundingClientRect().height = " + questions.getBoundingClientRect().height);
-    console.log("Malcolm questions.right - element10.right        = " + (questions.getBoundingClientRect().right - element10.getBoundingClientRect().right));
-    console.log("Malcolm element10.parentElement                  = " + element10.parentElement);
-    console.log("Malcolm element10.parentElement.left             = " + element10.parentElement.getBoundingClientRect().left);
-    console.log("Malcolm keyboard.parentElement                   = " + keyboard.parentElement);
-    console.log("Malcolm keyboard.parentElement.left              = " + keyboard.parentElement.getBoundingClientRect().left);
-    console.log("Malcolm element10                                = " + element10);
-    console.log("Malcolm element10.innerHTML                      = " + element10.innerHTML);
+    //console.log("Malcolm questions.getBoundingClientRect().left   = " + questions.getBoundingClientRect().left);
+    //console.log("Malcolm questions.getBoundingClientRect().right  = " + questions.getBoundingClientRect().right);
+    //console.log("Malcolm questions.getBoundingClientRect().width  = " + questions.getBoundingClientRect().width);
+    //console.log("Malcolm questions.getBoundingClientRect().height = " + questions.getBoundingClientRect().height);
+    //console.log("Malcolm questions.right - element10.right        = " + (questions.getBoundingClientRect().right - element10.getBoundingClientRect().right));
+    //console.log("Malcolm element10.parentElement                  = " + element10.parentElement);
+    //console.log("Malcolm element10.parentElement.left             = " + element10.parentElement.getBoundingClientRect().left);
+    //console.log("Malcolm keyboard.parentElement                   = " + keyboard.parentElement);
+    //console.log("Malcolm keyboard.parentElement.left              = " + keyboard.parentElement.getBoundingClientRect().left);
+    //console.log("Malcolm element10                                = " + element10);
+    //console.log("Malcolm element10.innerHTML                      = " + element10.innerHTML);
     //console.log("Malcolm element10.innerHTML.getBoundingClientRect().left = " + element10.innerHTML.getBoundingClientRect().left);
-    console.log("Malcolm keyboard.left                            = " + keyboard.style.left);
-    console.log("Malcolm keyboard.top                             = " + keyboard.style.top);
-    keyboard.style.visibility = "hidden";
+    //console.log("Malcolm keyboard.left                            = " + keyboard.style.left);
+    //console.log("Malcolm keyboard.top                             = " + keyboard.style.top);
+    //keyboard.style.visibility = "hidden";
 }
 function input(str) {
     var mathField = MQ.MathField(element);
