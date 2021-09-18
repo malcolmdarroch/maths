@@ -1,6 +1,7 @@
 var totalQuestions = 10;
 var score = 0;
 var answer = new Array(totalQuestions);
+var studentsFinalAnswer = new Array(totalQuestions);
 var MQ = MathQuill.noConflict().getInterface(2);
 var ielement = 0;
 var element;
@@ -11,27 +12,19 @@ function answerId(i)
 }
 
 function showAnswer() {
-    console.log("in showAnswer().");
+    document.getElementById(answerId(ielement)).readOnly = true;
     document.getElementById(answerId(ielement)).style.display = 'block';
-    const mathTextarea = document.getElementById(ielement).querySelector(".mq-textarea textarea");
-    mathTextarea.disabled = true;
+    studentsFinalAnswer[ielement] = MQ.MathField(document.getElementById(ielement)).latex();
     markAnswers();
-    document.getElementById(ielement+1).focus();
 }
 
 function markAnswers(){
-    console.log("in showAnswer().");
     score = 0;
     numAttempts = 0;
     for (i = 0; i < totalQuestions; i++) {
         var answerVisible = document.getElementById(answerId(i)).style.display == 'block';
         var studentsAnswer = MQ.MathField(document.getElementById(i)).latex();
         var attempted = answerVisible || studentsAnswer.length == answer[i].length;
-        console.log("i              = " + i);
-        console.log("studentsAnswer = " + studentsAnswer);
-        console.log("answer         = " + answer[i]);
-        console.log("studentsAnswer.length = " + studentsAnswer.length);
-        console.log("answer[i].length = " + answer[i].length);
         if (attempted)
         {
             numAttempts++;
@@ -45,6 +38,8 @@ function markAnswers(){
         }
     }
     document.getElementById('score').value = score;
+    document.getElementById('numAttempts').value = numAttempts;
+    showTotal();
 }
 
 const Coefficient = {A:0, B:1, C:2, D:3}
@@ -76,16 +71,16 @@ function genRand(i, coefficient = Coefficient.A) {
         }
         var min = 1;
         var v = Math.random();
-        console.log("In genRand(): i     = " + i);
-        console.log("In genRand(): v     = " + v);
-        console.log("In genRand(): max   = " + max);
-        console.log("In genRand(): min   = " + min);
-        console.log("In genRand(): power = " + power);
-        console.log("In genRand(): value = Math.floor(v * (max-min) + min) * (power+1);");
-        console.log("In genRand():       = Math.floor(" + v + " * " + (max-min) + " + " + min + ") * " + (power+1));
-        console.log("In genRand():       = Math.floor(" + (v * (max-min) + min) + ")  * " + (power+1));
-        value = Math.floor(v * (max-min) + min) * (power+1);
-        console.log("In genRand(): value = " + value);
+        //console.log("In genRand(): i     = " + i);
+        //console.log("In genRand(): v     = " + v);
+        //console.log("In genRand(): max   = " + max);
+        //console.log("In genRand(): min   = " + min);
+        //console.log("In genRand(): power = " + power);
+        //console.log("In genRand(): value = Math.floor(v * (max-min) + min) * (power+1);");
+        //console.log("In genRand():       = Math.floor(" + v + " * " + (max-min) + " + " + min + ") * " + (power+1));
+        //console.log("In genRand():       = Math.floor(" + (v * (max-min) + min) + ")  * " + (power+1));
+        //value = Math.floor(v * (max-min) + min) * (power+1);
+        //console.log("In genRand(): value = " + value);
     }
     coefficientValues[i][coefficient] = value;
     return value;
@@ -107,9 +102,9 @@ function newSheet() {
         var c = genRand(i, Coefficient.C);
         var d = genRand(i, Coefficient.D);
         answer[i] = toCoefficientString(a/4) + "x^4+" + toCoefficientString(b/3) + "x^3+" + toCoefficientString(c/2) + "x^2+" + toCoefficientString(d) + "x+c";
-        console.log("In newSheet(): a = " + a + ", b = " + b + ", c = " + c + ", d = " + d);
-        console.log("In newSheet(): answer[i] = " + answer[i]);
-        console.log("In newSheet(): Math.floor(a/4) = " + Math.floor(a/4));
+        //console.log("In newSheet(): a = " + a + ", b = " + b + ", c = " + c + ", d = " + d);
+        //console.log("In newSheet(): answer[i] = " + answer[i]);
+        //console.log("In newSheet(): Math.floor(a/4) = " + Math.floor(a/4));
             
         questions += "<td><span style=\"font-size: 11pt\">\\( \\int_{}^{} " + a + "x^3 +" + b + "x^2 + " + c + "x + " + d + " \\,dx =\\)</span></td>";
         questions += "<td><span id='" + i + "' style=\"font-size: 11pt\">{}x^4 + { }x^3 + { }x^2 + { }x { }</span>";
@@ -126,9 +121,14 @@ function newSheet() {
                 edit: function() {
                     var elementMathField = MQ.MathField(document.getElementById(ielement));
                     var studentsAnswer = elementMathField.latex();
+                    if (document.getElementById(answerId(ielement)).readOnly) {
+                        if (studentsAnswer != studentsFinalAnswer[ielement]){
+                            elementMathField.latex(studentsFinalAnswer[ielement]);
+                        }
+                        return;
+                    }
+
                     var filled = studentsAnswer.length == answer[ielement].length;
-                    console.log("In edit: ielement                = " + ielement);
-                    console.log("In edit: studentsAnswer          = " + studentsAnswer);
                     //console.log("In edit: studentsAnswer.length   = " + studentsAnswer.length);
                     //console.log("In edit: answer[ielement]        = " + answer[ielement]);
                     //console.log("In edit: answer[ielement].length = " + answer[ielement].length);
