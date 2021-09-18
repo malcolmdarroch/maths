@@ -1,6 +1,7 @@
 var totalQuestions = 10;
 var score = 0;
 var answer = new Array(totalQuestions);
+var studentsFinalAnswer = new Array(totalQuestions);
 var MQ = MathQuill.noConflict().getInterface(2);
 var ielement = 0;
 var element;
@@ -59,13 +60,9 @@ function getProbability (z)
     var absZ = Math.abs(z);
     var sign = (absZ / z).toFixed(0); 
     absZ = absZ.toString().length < 3 ? absZ.toFixed(1) : absZ;
-    //console.log("...Math.abs(" + z + ") = " + Math.abs(z) + ", sign = " + sign + ", absZ.toString().charAt(2) = " + absZ.toString().charAt(2));
     var i = Number(absZ.toString().charAt(0) + absZ.toString().charAt(2));
     var j = Number(absZ.toString().charAt(3)) + 1;
     var k = Number(absZ.toString().charAt(4)) + 11;
-    //console.log (" i = " + i + ", j = " + j + ", k = " + k);
-    //console.log ("        (Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4)  = " + (Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4));
-    //console.log ("sign * ((Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4)) = " + sign * ((Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4)));
 
     return sign * ((Number(pTable[i][j]) + Number(pTable[i][k]) / 10000).toFixed(4));
 }
@@ -76,8 +73,9 @@ function answerId(i)
 }
 
 function showAnswer() {
+    document.getElementById(answerId(ielement)).readOnly = true;
     document.getElementById(answerId(ielement)).style.display = 'block';
-    var staticMathField = MQ.StaticMath(document.getElementById(ielement));
+    studentsFinalAnswer[ielement] = MQ.MathField(document.getElementById(ielement)).latex();
     markAnswers();
 }
 
@@ -93,11 +91,6 @@ function markAnswers(){
             attempted = studentsAnswer.length == answer[i].length;
         }
 
-        //console.log("i              = " + i);
-        //console.log("studentsAnswer = " + studentsAnswer);
-        //console.log("answer         = " + answer[i]);
-        //console.log("studentsAnswer.length = " + studentsAnswer.length);
-        //console.log("answer[i].length = " + answer[i].length);
         if (attempted)
         {
             numAttempts++;
@@ -111,6 +104,8 @@ function markAnswers(){
         }
     }
     document.getElementById('score').value = score;
+    document.getElementById('numAttempts').value = numAttempts;
+    showTotal();
 }
 
 const Variable = {Z1:0, Z2:1, MU:2, SIGMA:3, X:4}
@@ -158,15 +153,9 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
         if (betweenZeroAnd) {
             answer[i] = getProbability(z).toFixed(4);
             questions += "<td>The probability that a random value is between zero and </td>";
-            //console.log("getProbability(" + z + ") = " + getProbability(z));
-            //console.log("answer(" + i + ")         = " + answer[i]);
-            //console.log("-------------------------------------------")
         } 
         else if (lessThan) {
             answer[i] = parseFloat((parseFloat("0.5") + parseFloat(getProbability(z)))).toFixed(4);
-            //console.log("getProbability(" + z + ") = " + getProbability(z));
-            //console.log("answer(" + i + ")         = " + answer[i]);
-            //console.log("-------------------------------------------")
             questions += "<td>The probability that a random value is less than </td>";
         }
         else if (between) {
@@ -178,10 +167,6 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
             p1 = parseFloat(getProbability(z1)).toFixed(4);
             p2 = parseFloat(getProbability(z2)).toFixed(4);
             answer[i] = Math.abs(p2 - p1).toFixed(4);
-            //console.log("p1 = " + p1);
-            //console.log("p2 = " + p2);
-            //console.log("answer(" + i + ") = " + answer[i]);
-            //console.log("-------------------------------------------")
             questions += "<td>The probability that a random value is between </td>";
             questions += "<td><span style=\"font-size: 11pt\">" + z1 + " and </span></td>";
         }
@@ -205,20 +190,10 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
                 questions += "<td><span style=\"font-size: 11pt\">" + mu + ", &sigma; = </span></td>";
                 questions += "<td><span style=\"font-size: 11pt\">" + sigma + ", and " + "X".italics() + " = </span></td>";
                 z = x;
-                //console.log("mu     = " + mu);
-                //console.log("sigma  = " + sigma);
-                //console.log("x      = " + x);
-                //console.log("neg*mu = " + (neg*mu));
-                //console.log("x-mu   = " + (x-mu));
-                //console.log("answer(" + i + ") = " + answer[i]);
-                //console.log("-------------------------------------------");
             }
         }
         else {
             answer[i] = parseFloat((parseFloat("0.5") - parseFloat(getProbability(z)))).toFixed(4);
-            //console.log("getProbability(" + z + ") = " + getProbability(z));
-            //console.log("answer(" + i + ")         = " + answer[i]);
-            //console.log("-------------------------------------------")
             questions += "<td>The probability that a random value is greater than </td>";
         }
         
@@ -231,21 +206,22 @@ function newSheet(betweenZeroAnd = true, lessThan = false, negative = false, mix
     document.getElementById('questions').innerHTML = "<table>" + questions + "</table>";
     for (var i = 0; i < totalQuestions; i++) {
         element = document.getElementById(i);
+        document.getElementById(answerId(ielement)).readOnly = false;
         var elementMathField = MQ.MathField(element, {
             handlers: {
                 edit: function() {
                     var elementMathField = MQ.MathField(document.getElementById(ielement));
                     var studentsAnswer = elementMathField.latex();
+                    if (document.getElementById(answerId(ielement)).readOnly) {
+                        if (studentsAnswer != studentsFinalAnswer[ielement]){
+                            elementMathField.latex(studentsFinalAnswer[ielement]);
+                        }
+                        return;
+                    }
+
                     var filled = studentsAnswer.length == answer[ielement].length;
-                    //console.log("In edit: ielement                = " + ielement);
-                    //console.log("In edit: studentsAnswer          = " + studentsAnswer);
-                    //console.log("In edit: studentsAnswer.length   = " + studentsAnswer.length);
-                    //console.log("In edit: answer[ielement]        = " + answer[ielement]);
-                    //console.log("In edit: answer[ielement].length = " + answer[ielement].length);
-                    //console.log("In edit: filled                  = " + filled);
                     if (filled) {
                         markAnswers();
-                        showTotal();
                         if (studentsAnswer == answer[ielement])
                         {
                             elementMathField.blur();
